@@ -51,14 +51,14 @@ def custom_score(game, player):
     # return 1 / (1 + math.exp(float(own_moves - opp_moves)))
 
     # 2nd: Evaluated by (#my_moves - 2 * #opponents_moves)
-    # return float(own_moves - 2 * opp_moves)
+    return float(own_moves - 2 * opp_moves)
 
     # 3rd: Evaluated by  (#my_moves - #opponents_moves)^3
     # return float((own_moves - opp_moves) ** 3)
 
     # 4th: Evaluated by w * (#my_moves - #opponents_moves),
     # w is the weight and is positively proportional to the number of moves we have taken up to now.
-    return float(own_moves - opp_moves) * game.move_count/(game.width * game.height)
+    # return float(own_moves - opp_moves) * game.move_count/(game.width * game.height)
 
 
 class CustomPlayer:
