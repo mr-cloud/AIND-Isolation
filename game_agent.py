@@ -7,6 +7,7 @@ You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
 import random
+import math
 
 
 class Timeout(Exception):
@@ -38,7 +39,26 @@ def custom_score(game, player):
     """
 
     # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_winner(player):
+        return float('inf')
+    if game.is_loser(player):
+        return float('-inf')
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    # 1st: Evaluated by sigmoid function (1 / 1 + e^z, z = (#my_moves - #opponents_moves))
+    # return 1 / (1 + math.exp(float(own_moves - opp_moves)))
+
+    # 2nd: Evaluated by (#my_moves - 2 * #opponents_moves)
+    # return float(own_moves - 2 * opp_moves)
+
+    # 3rd: Evaluated by  (#my_moves - #opponents_moves)^3
+    # return float((own_moves - opp_moves) ** 3)
+
+    # 4th: Evaluated by w * (#my_moves - #opponents_moves),
+    # w is the weight and is positively proportional to the number of moves we have taken up to now.
+    return float(own_moves - opp_moves) * game.move_count/(game.width * game.height)
 
 
 class CustomPlayer:
@@ -133,14 +153,30 @@ class CustomPlayer:
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            score, move = self.minimax(game, self.search_depth)
+            score = None
+            move = None
+            if self.method == 'minimax':
+                if self.iterative:
+                    for depth in range(game.width * game.height):
+                        score, move = self.minimax(game, depth)
+                else:
+                    score, move = self.minimax(game, self.search_depth)
+            elif self.method == 'alphabeta':
+                if self.iterative:
+                    for depth in range(game.width * game.height):
+                        score, move = self.alphabeta(game, depth)
+                else:
+                    score, move = self.alphabeta(game, self.search_depth)
+            else:
+                move = legal_moves[random.randint(0, len(legal_moves) - 1)]
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
             # Sample a move from the legal moves.
-            move = legal_moves[random.randint(0, len(legal_moves)-1)]
-
+            # move = legal_moves[random.randint(0, len(legal_moves)-1)]
+            pass
         # Return the best move from the last completed search iteration
+
         return move
 
     def minimax(self, game, depth, maximizing_player=True):
@@ -233,4 +269,34 @@ class CustomPlayer:
             raise Timeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
+        if maximizing_player:
+            if depth <= 0 or game.is_winner(self) or game.is_loser(self):
+                return self.score(game, self), None
+            else:
+                val = float('-inf')
+                best_move = None
+                for move in game.get_legal_moves(self):
+                    next_val, _ = self.alphabeta(game.forecast_move(move), depth - 1, alpha, beta, False)
+                    if next_val > val:
+                        val = next_val
+                        best_move = move
+                    if val >= beta:
+                        return val, best_move
+                    alpha = val
+                return val, best_move
+        else:
+            if depth <= 0 or game.is_winner(self) or game.is_loser(self):
+                return self.score(game, self), None
+            else:
+                val = float('inf')
+                best_move = None
+                for move in game.get_legal_moves(game.get_opponent(self)):
+                    next_val, _ = self.alphabeta(game.forecast_move(move), depth-1, alpha, beta, True)
+                    if next_val < val:
+                        val = next_val
+                        best_move = move
+                    if val <= alpha:
+                        return val, None
+                    beta = val
+                return val, best_move
+
