@@ -282,7 +282,7 @@ class CustomPlayer:
                         best_move = move
                     if val >= beta:
                         return val, best_move
-                    alpha = val
+                    alpha = max(alpha, val)
                 return val, best_move
         else:
             if depth <= 0 or game.is_winner(self) or game.is_loser(self):
@@ -297,6 +297,6 @@ class CustomPlayer:
                         best_move = move
                     if val <= alpha:
                         return val, None
-                    beta = val
+                    beta = min(beta, val)
                 return val, best_move
 
