@@ -47,8 +47,8 @@ def custom_score(game, player):
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
-    # 1st: Evaluated by sigmoid function (1 / 1 + e^z, z = (#my_moves - #opponents_moves))
-    # return 1 / (1 + math.exp(float(own_moves - opp_moves)))
+    # 1st: Evaluated by sigmoid function (1 / 1 + e^-z, z = (#my_moves - #opponents_moves))
+    # return 1 / (1 + math.exp(-float(own_moves - opp_moves)))
 
     # 2nd: Evaluated by (#my_moves - 2 * #opponents_moves)
     return float(own_moves - 2 * opp_moves)
